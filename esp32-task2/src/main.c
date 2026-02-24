@@ -9,6 +9,10 @@
 
 #define TASK_RUNNING_TIME_MS  5000   /* Time for tasks to run */
 
+#define TASK1_CORE_IDE        0 // CAMBIO 6
+#define TASK2_CORE_IDE        1 // CAMBIO 7
+#define TASK3_CORE_IDE        1 // CAMBIO 8
+
 void vTask1(void * parameter);
 void vTask2(void * parameter);
 void vTask3(void * parameter);
@@ -23,21 +27,24 @@ void app_main()
   vTaskPrioritySet(NULL, APP_MAIN_PRIORITY);  
   
   /* Create a new task and add it to the list of tasks that are ready to run */
-  xTaskCreate(
+  /* INICIO CAMBIO 9*/
+  xTaskCreatePinnedToCore(
       vTask1,           /* Task function */
       "Task1",          /* Name of task; for human use */
       TASK_STACK_SIZE,  /* Stack size of task */
       NULL,             /* Parameter of the task */
       TASK1_PRIORITY,   /* Priority of the task */
-      &xHandle1);       /* Task handle to keep track of created task */
+      &xHandle1,       /* Task handle to keep track of created task */
+      TASK1_CORE_IDE);  /* Core where the task should run */
+    /* FIN CAMBIO 9 */
   configASSERT(xHandle1);
 
   /* Create a new task and add it to the list of tasks that are ready to run */
-  xTaskCreate(vTask2, "Task2", TASK_STACK_SIZE, NULL, TASK2_PRIORITY, &xHandle2); 
+  xTaskCreatePinnedToCore(vTask2, "Task2", TASK_STACK_SIZE, NULL, TASK2_PRIORITY, &xHandle2, TASK2_CORE_IDE); // CAMBIO 10
   configASSERT(xHandle2);
 
     /* Create a new task and add it to the list of tasks that are ready to run */
-  xTaskCreate(vTask3, "Task3", TASK_STACK_SIZE, NULL, TASK3_PRIORITY, &xHandle3);
+  xTaskCreatePinnedToCore(vTask3, "Task3", TASK_STACK_SIZE, NULL, TASK3_PRIORITY, &xHandle3, TASK3_CORE_IDE); // CAMBIO 11
   configASSERT(xHandle3);  
 
   /* Wait TASK_RUNNING_TIME_MS ms */
@@ -66,7 +73,8 @@ void vTask1(void * parameter)
   /* loop forever */
   for(;;)
   {
-    printf("[Task1] Loop iteration %d\n", ++counter);
+    vTaskPrioritySet(NULL, TASK3_PRIORITY); //CAMBIO 4
+    printf("[Task1] Loop iteration %d, priority: %d\n", ++counter, uxTaskPriorityGet(NULL)); //CAMBIO 1
   }
 }
 
@@ -78,7 +86,8 @@ void vTask2(void * parameter)
   /* loop forever */
   for(;;)
   {
-    printf("[Task2] Loop iteration %d\n", ++counter);
+    vTaskPrioritySet(NULL, TASK3_PRIORITY); //CAMBIO 5
+    printf("[Task2] Loop iteration %d, priority: %d\n", ++counter, uxTaskPriorityGet(NULL)); //CAMBIO 2
   }
 }
 
@@ -90,6 +99,6 @@ void vTask3(void * parameter)
   /* loop forever */
   for(;;)
   {
-    printf("[Task3] Loop iteration %d\n", ++counter);
+    printf("[Task3] Loop iteration %d, priority: %d\n", ++counter, uxTaskPriorityGet(NULL)); //CAMBIO 3
   }
 }
